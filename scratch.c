@@ -211,6 +211,4 @@ int main() {
 
     pop(&l);
     pop(&l);
-
-    return 0;
 }

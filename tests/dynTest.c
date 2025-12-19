@@ -52,6 +52,4 @@ i32 main(void) {
             printf("%c", msgs.items[i].items[j]);
         printf("%s", i < (msgs.size-1)?", ":"");
     }
-
-    return 0;
 }
