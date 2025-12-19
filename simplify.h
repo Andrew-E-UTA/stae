@@ -5,9 +5,9 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#define nullptr ((void*)0)
-
 #define inRange(n, min, max) size_t n = min; n < max; n++
+
+#define nullptr ((void*)0)
 
 typedef int8_t i8;
 typedef int16_t i16;

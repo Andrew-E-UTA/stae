@@ -1,4 +1,5 @@
-#include "dyn.h"
+#define DYN_IMPLMENTATION
+#include "../dyn.h"
 #include <stdio.h>
 
 DynInstantiate(String, char);
@@ -8,13 +9,15 @@ DynInstantiate(Ints, i32);
 DynInstantiate(Strings, String);
 
 i32 main(void) {
-    String msg = StringCreate();
+    String msg;
+    DynInit(&msg);
     DynAppendMany(&msg, "Hello, World!\n", 14);
 
     DynForeach(msg, i)
         printf("%c", msg.items[i]);
 
-    Floats floats = FloatsCreate();
+    Floats floats;
+    DynInit(&floats);
     for(inRange(i, 0, 20)) {
         f32 f = i * 3.33;
         DynAppend(&floats, &f);
@@ -24,7 +27,8 @@ i32 main(void) {
         printf("%g%s", floats.items[i], i < (floats.size-1)?", ":"");
     printf("\n");
 
-    Ints ints = IntsCreate();
+    Ints ints;
+    DynInit(&ints);
     for(inRange(i, 10, 25))
         DynAppend(&ints, &i);
 
@@ -37,10 +41,12 @@ i32 main(void) {
         printf("%d%s", ints.items[i], i < (ints.size-1)?", ":"");
     printf("\n");
 
-    Strings msgs = StringsCreate();
+    Strings msgs;
+    DynInit(&msgs);
     char *buffer[] = {"Instantiate", "Append", "Reserve", "Resize", "RemoveUnord"};
 
-    String sBuf = StringCreate();
+    String sBuf;
+    DynInit(&sBuf);
     for(inRange(i, 0, 5)) {
         DynAppendMany(&sBuf, buffer[i], strlen(buffer[i]));
         DynAppend(&msgs, &sBuf);

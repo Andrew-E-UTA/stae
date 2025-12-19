@@ -10,14 +10,9 @@ uintptr_t c##temp;\
 Node* c = s;\
 for(;c;c##temp=c##key^c->key, c##key=(uintptr_t)c, c=(Node*)c##temp)
     
-#define ListLast(s, c)\
-uintptr_t c##key = 0;\
-uintptr_t c##t;\
-Node* c = s;\
-for(;c##t=c##key^c->key;c##key=(uintptr_t)c, c=(Node*)c##t);
-
-#define ListEmpty(s) ((s).count == 0)
-#define ListContains(s, item) (get(&(s), item) != 0)
+#define ListLast(s, c)          ((s).tail)
+#define ListEmpty(s)            ((s).count == 0)
+#define ListContains(s, item)   (get(&(s), item) != 0)
 
 typedef struct {
     uintptr_t key;
@@ -38,7 +33,11 @@ void push(List* l, int item) {
         l->tail = l->head;
         return;
     }
-    ListLast(l->head, c);
+
+    uintptr_t key = 0;
+    uintptr_t t;
+    Node* c = l->head;
+    for(;t=key^c->key;key=(uintptr_t)c, c=(Node*)t);
     
     Node* n = calloc(1, sizeof(Node));
     n->item = item;
