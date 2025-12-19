@@ -221,23 +221,66 @@ void Name##Copy(Name *dest, Name *src) {                                        
     dest->copy_fn = src->copy_fn;                                               \
     dest->free_fn = src->free_fn;                                               \
     dest->init_fn = src->init_fn;                                               \
-    if(dest->copy_fn)                                                           \
+    if(Type##Copy)                                                              \
         for(size_t i = 0; i < src->size; i++) {                                 \
-            if(dest->init_fn) (dest->init_fn)(dest->items + i);                 \
-            dest->copy_fn(dest->items + i, src->items + i);                     \
+            if(Type##Init) Type##Init(dest->items + i);                         \
+            Type##Copy(dest->items + i, src->items + i);                        \
     } else STAE_MEMCPY(dest->items, src->items, src->size * sizeof(Type));      \
 }                                                                               \
                                                                                 \
 void Name##Free(Name *dyn) {                                                    \
-    if(dyn->free_fn)                                                            \
+    if(Type##Free)                                                              \
         for(size_t i = 0; i < dyn->size; i++)                                   \
-            dyn->free_fn(dyn->items + i);                                       \
+            Type##Free(dyn->items + i);                                         \
     STAE_FREE(dyn->items);                                                      \
     STAE_MEMSET(dyn, 0, sizeof(Name));                                          \
 }                                                                               \
                                                                                 \
 void Name##Init(Name* dyn) {                                                    \
-    DynInit(dyn);                                                               \
+    DynInit(dyn, .cpy_fn=(CpyFn)Type##Copy, .free_fn=(FreeFn)Type##Free, .init_fn=(InitFn)Type##Init); \
 }
 
 #endif//_STAE_DYN_H
+
+#ifdef DYN_IMPLEMENTATION
+
+CpyFn u8Copy  = (CpyFn) nullptr;
+CpyFn u16Copy = (CpyFn) nullptr;
+CpyFn u32Copy = (CpyFn) nullptr;
+CpyFn u64Copy = (CpyFn) nullptr;
+CpyFn i8Copy  = (CpyFn) nullptr;
+CpyFn i16Copy = (CpyFn) nullptr;
+CpyFn i32Copy = (CpyFn) nullptr;
+CpyFn i64Copy = (CpyFn) nullptr;
+CpyFn f32Copy  = (CpyFn) nullptr;
+CpyFn f64Copy  = (CpyFn) nullptr;
+CpyFn boolCopy = (CpyFn) nullptr;
+CpyFn charCopy = (CpyFn) nullptr;
+
+FreeFn u8Free  = (FreeFn) nullptr;
+FreeFn u16Free = (FreeFn) nullptr;
+FreeFn u32Free = (FreeFn) nullptr;
+FreeFn u64Free = (FreeFn) nullptr;
+FreeFn i8Free  = (FreeFn) nullptr;
+FreeFn i16Free = (FreeFn) nullptr;
+FreeFn i32Free = (FreeFn) nullptr;
+FreeFn i64Free = (FreeFn) nullptr;
+FreeFn f32Free  = (FreeFn) nullptr;
+FreeFn f64Free  = (FreeFn) nullptr;
+FreeFn boolFree = (FreeFn) nullptr;
+FreeFn charFree = (FreeFn) nullptr;
+
+InitFn u8Init  = (InitFn) nullptr;
+InitFn u16Init = (InitFn) nullptr;
+InitFn u32Init = (InitFn) nullptr;
+InitFn u64Init = (InitFn) nullptr;
+InitFn i8Init  = (InitFn) nullptr;
+InitFn i16Init = (InitFn) nullptr;
+InitFn i32Init = (InitFn) nullptr;
+InitFn i64Init = (InitFn) nullptr;
+InitFn f32Init  = (InitFn) nullptr;
+InitFn f64Init  = (InitFn) nullptr;
+InitFn boolInit = (InitFn) nullptr;
+InitFn charInit = (InitFn) nullptr;
+
+#endif
