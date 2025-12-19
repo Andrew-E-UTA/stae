@@ -234,5 +234,10 @@ void Name##Free(Name *dyn) {                                                    
             dyn->free_fn(dyn->items + i);                                       \
     STAE_FREE(dyn->items);                                                      \
     STAE_MEMSET(dyn, 0, sizeof(Name));                                          \
+}                                                                               \
+                                                                                \
+void Name##Init(Name* dyn) {                                                    \
+    DynInit(dyn);                                                               \
 }
+
 #endif//_STAE_DYN_H

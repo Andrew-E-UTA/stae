@@ -42,7 +42,7 @@ i32 main(void) {
     printf("\n");
 
     Strings msgs;
-    DynInit(&msgs);
+    DynInit(&msgs, .cpy_fn=(CpyFn)StringCopy, .free_fn=(FreeFn)StringFree, .init_fn=(InitFn)StringInit);
     char *buffer[] = {"Instantiate", "Append", "Reserve", "Resize", "RemoveUnord"};
 
     String sBuf;
