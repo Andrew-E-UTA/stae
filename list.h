@@ -71,7 +71,8 @@ Name Name##Create(void) {                                                       
 //======================================================================================
 /*
 */
-static inline void _GenericListPush(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t *p_list_count, void* p_item, size_t item_size) {
+static inline void _GenericListPush(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t *p_list_count,
+         void* p_item, size_t item_size) {
     if(!p_list_head) return;
     Node_Generic* p_head = *p_list_head;
     if(!p_head) {
@@ -79,6 +80,8 @@ static inline void _GenericListPush(Node_Generic** p_list_head, Node_Generic** p
         p_head->data = calloc(1, item_size);
         STAE_MEMCPY(p_head->data, p_item, item_size);
         *p_list_head = p_head;
+        *p_list_tail = *p_list_head;
+        return;
     }
     uintptr_t key = 0, temp_key;
     Node_Generic* p_curr_node = p_head;
@@ -101,61 +104,82 @@ _GenericListPush(&((p_list)->head), &((p_list)->tail), &((p_list)->count),      
 //======================================================================================
 /*
 */
-static inline void _GenericListPop(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t *p_list_count) {
+static inline void _GenericListPop(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count) {
     if(!p_list_head) return;
-    uintptr_t key = 0, t;
-    Node_Generic* c = *p_list_head, *last;
-    for(;t=key^c->key;key=(uintptr_t)c, last = c, c=(Node_Generic*)t);
-    if(c == *p_list_head) *p_list_head = nullptr;
+    uintptr_t key = 0, temp_key;
+    Node_Generic* p_curr_node = *p_list_head, *p_last_node;
+    for(;temp_key=key^p_curr_node->key;
+        key=(uintptr_t)p_curr_node, p_last_node = p_curr_node, p_curr_node=(Node_Generic*)temp_key);
+    if(p_curr_node == *p_list_head) *p_list_head = nullptr;
     *p_list_count = *p_list_count - 1;
-    *p_list_tail = last;
-    last->key ^= (uintptr_t)c;
-    free(c);
+    *p_list_tail = p_last_node;
+    p_last_node->key ^= (uintptr_t)p_curr_node;
+    free(p_curr_node);
 }
 
 #define ListPop(p_list)                                                         \
     _GenericListPop(&((p_list)->head), &((p_list)->tail), &((p_list)->count))
-// do {                                                                            \
-//     if(!(p_list)) break;                                                        \
-//     if(ListEmpty(*(p_list))) break;                                             \
-//     uintptr_t key = 0, t;                                                       \
-//     Node_Generic* c = (p_list)->head, *last;                                    \
-//     for(;t=key^c->key;key=(uintptr_t)c, last = c, c=(Node_Generic*)t);          \
-//     if(c == (p_list)->head) (p_list)->head = nullptr;                           \
-//     (p_list)->count--;                                                          \
-//     (p_list)->tail = last;                                                      \
-//     last->key ^= (uintptr_t)c;                                                  \
-//     free(c);                                                                    \
-// }while(0)
 
 //======================================================================================
 //======================================================================================
-
+/*
+*/
+static inline void _GenericInsertAt(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count,
+        void* p_item, size_t item_size, size_t index) {
+    if(!p_list_head) return;
+    if(*p_list_count < index - 1 && index) return;
+    uintptr_t key = 0, temp_key;
+    Node_Generic* p_curr_node = *p_list_head, *p_last_node = 0;
+    for(size_t j = 0; p_curr_node && j != index;
+        temp_key=key^p_curr_node->key,
+        key=(uintptr_t)p_curr_node,
+        p_last_node = p_curr_node,
+        p_curr_node=(Node_Generic*)temp_key,
+        j++);
+    Node_Generic* p_new_node = malloc(sizeof(Node_Generic));
+    p_new_node->key ^= (uintptr_t)p_last_node ^ (uintptr_t)p_curr_node;
+    p_new_node->data = malloc(item_size);
+    STAE_MEMCPY(p_new_node->data, p_item, item_size);
+    if(0 == index)  *p_list_head = p_new_node;
+    if(*p_list_count == 0) *p_list_tail =  *p_list_head;
+    if(p_last_node){
+        p_last_node->key ^= (uintptr_t)p_curr_node;
+        p_last_node->key ^= (uintptr_t)p_new_node;
+    }
+    if(p_curr_node) {
+        p_curr_node->key ^= (uintptr_t)p_last_node;
+        p_curr_node->key ^= (uintptr_t)p_new_node;
+    }
+    *p_list_count = *p_list_count + 1;
+}
 
 #define ListInsertAt(p_list, index, p_item)                                     \
-do {                                                                            \
-    if(!(p_list)) break;                                                        \
-    if((p_list)->count < index - 1 && index) break;                             \
-    uintptr_t key = 0, temp;                                                    \
-    Node_Generic* c = (p_list)->head, *last;                                    \
-    for(size_t j = 0;                                                           \
-        c && j != index;                                                        \
-        temp=key^c->key, key=(uintptr_t)c, last = c, c=(Node_Generic*)temp, j++);\
-    Node_Generic* n = calloc(1, sizeof(Node_Generic));                          \
-    n->data = calloc(1, (p_list)->data_size);                                   \
-    STAE_MEMCPY(n->data, p_item, (p_list)->data_size);                          \
-    if(0 == index) (p_list)->head = n;                                          \
-    if((p_list)->count == 0) (p_list)->tail = (p_list)->head;                   \
-    if(last){                                                                   \
-        last->key ^= (uintptr_t)c;                                              \
-        last->key ^= (uintptr_t)n;                                              \
-    }                                                                           \
-    if(c) {                                                                     \
-        c->key ^= (uintptr_t)last;                                              \
-        c->key ^= (uintptr_t)n;                                                 \
-    }                                                                           \
-    (p_list)->count++;                                                          \
-}while(0)
+    _GenericInsertAt(&((p_list)->head), &((p_list)->tail), &((p_list)->count),  \
+        p_item, (p_list)->data_size, index)
+
+// do {                                                                            \
+//     if(!(p_list)) break;                                                        \
+//     if((p_list)->count < index - 1 && index) break;                             \
+//     uintptr_t key = 0, temp;                                                    \
+//     Node_Generic* c = (p_list)->head, *last;                                    \
+//     for(size_t j = 0;                                                           \
+//         c && j != index;                                                        \
+//         temp=key^c->key, key=(uintptr_t)c, last = c, c=(Node_Generic*)temp, j++);\
+//     Node_Generic* n = calloc(1, sizeof(Node_Generic));                          \
+//     n->data = calloc(1, (p_list)->data_size);                                   \
+//     STAE_MEMCPY(n->data, p_item, (p_list)->data_size);                          \
+//     if(0 == index) (p_list)->head = n;                                          \
+//     if((p_list)->count == 0) (p_list)->tail = (p_list)->head;                   \
+//     if(last){                                                                   \
+//         last->key ^= (uintptr_t)c;                                              \
+//         last->key ^= (uintptr_t)n;                                              \
+//     }                                                                           \
+//     if(c) {                                                                     \
+//         c->key ^= (uintptr_t)last;                                              \
+//         c->key ^= (uintptr_t)n;                                                 \
+//     }                                                                           \
+//     (p_list)->count++;                                                          \
+// }while(0)
 
 
 
