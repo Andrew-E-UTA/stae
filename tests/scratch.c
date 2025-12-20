@@ -74,7 +74,12 @@ void insertAt(List* l, size_t index, int item) {
     Node* c = l->head;
     Node* last = 0;
     size_t j = 0;
-    for(;c && j != index;temp=key^c->key, key=(uintptr_t)c, last = c, c=(Node*)temp, j++);
+    for(;c && j != index;
+        temp=key^c->key,
+        key=(uintptr_t)c,
+        last = c,
+        c=(Node*)temp,
+        j++);
 
     //make new node
     Node* n = calloc(1, sizeof(Node));

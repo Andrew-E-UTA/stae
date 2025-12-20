@@ -19,7 +19,13 @@ int main (void) {
     ListPop(&ints);
 
     i32 i = 999;
+    ListInsertAt(&ints, 0, &i);
     ListInsertAt(&ints, 10, &i);
+    ListInsertAt(&ints, ints.count+1, &i);
+    
+    ListRemoveAt(&ints, 0);
+    ListRemoveAt(&ints, 9);
+    ListRemoveAt(&ints, ints.count);
 
     i=0;
     ListForeach(ints.head, node) {

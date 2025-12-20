@@ -131,13 +131,13 @@ static inline void _GenericInsertAt(Node_Generic** p_list_head, Node_Generic** p
     uintptr_t key = 0, temp_key;
     Node_Generic* p_curr_node = *p_list_head, *p_last_node = 0;
     for(size_t j = 0; p_curr_node && j != index;
-        temp_key=key^p_curr_node->key,
-        key=(uintptr_t)p_curr_node,
+        temp_key = key ^ (p_curr_node->key),
+        key = (uintptr_t)p_curr_node,
         p_last_node = p_curr_node,
-        p_curr_node=(Node_Generic*)temp_key,
+        p_curr_node = (Node_Generic*)temp_key,
         j++);
     Node_Generic* p_new_node = malloc(sizeof(Node_Generic));
-    p_new_node->key ^= (uintptr_t)p_last_node ^ (uintptr_t)p_curr_node;
+    p_new_node->key = (uintptr_t)p_last_node ^ (uintptr_t)p_curr_node;
     p_new_node->data = malloc(item_size);
     STAE_MEMCPY(p_new_node->data, p_item, item_size);
     if(0 == index)  *p_list_head = p_new_node;
@@ -157,30 +157,41 @@ static inline void _GenericInsertAt(Node_Generic** p_list_head, Node_Generic** p
     _GenericInsertAt(&((p_list)->head), &((p_list)->tail), &((p_list)->count),  \
         p_item, (p_list)->data_size, index)
 
-// do {                                                                            \
-//     if(!(p_list)) break;                                                        \
-//     if((p_list)->count < index - 1 && index) break;                             \
-//     uintptr_t key = 0, temp;                                                    \
-//     Node_Generic* c = (p_list)->head, *last;                                    \
-//     for(size_t j = 0;                                                           \
-//         c && j != index;                                                        \
-//         temp=key^c->key, key=(uintptr_t)c, last = c, c=(Node_Generic*)temp, j++);\
-//     Node_Generic* n = calloc(1, sizeof(Node_Generic));                          \
-//     n->data = calloc(1, (p_list)->data_size);                                   \
-//     STAE_MEMCPY(n->data, p_item, (p_list)->data_size);                          \
-//     if(0 == index) (p_list)->head = n;                                          \
-//     if((p_list)->count == 0) (p_list)->tail = (p_list)->head;                   \
-//     if(last){                                                                   \
-//         last->key ^= (uintptr_t)c;                                              \
-//         last->key ^= (uintptr_t)n;                                              \
-//     }                                                                           \
-//     if(c) {                                                                     \
-//         c->key ^= (uintptr_t)last;                                              \
-//         c->key ^= (uintptr_t)n;                                                 \
-//     }                                                                           \
-//     (p_list)->count++;                                                          \
-// }while(0)
+//======================================================================================
+//======================================================================================
+/*
+*/
+static inline void _GenericRemoveAt(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count, 
+        size_t index) {
+    if(!p_list_head) return;
+    if(*p_list_count < index - 1 && index) return;
+    uintptr_t key = 0, temp_key;
+    Node_Generic* p_curr_node = *p_list_head, *p_last_node = {0}, *p_next_node = {0};
+    size_t j = 0;
+    for(;p_curr_node && j != index;
+        temp_key=key^p_curr_node->key,
+        key=(uintptr_t)p_curr_node,
+        p_last_node = p_curr_node,
+        p_curr_node=(Node_Generic*)temp_key,
+        j++);
+    if (!p_curr_node) return;
+    p_next_node = (Node_Generic*) (p_curr_node->key ^ key);
+    if(0 == index) *p_list_head = p_next_node;
+    if(*p_list_count + 1 == index) *p_list_tail = p_last_node;
+    //update old keys
+    if(p_last_node) {
+        p_last_node->key ^= (uintptr_t)p_curr_node;
+        p_last_node->key ^= (uintptr_t)p_next_node;
+    }
+    if(p_next_node) {
+        p_next_node->key ^= (uintptr_t)p_curr_node;
+        p_next_node->key ^= (uintptr_t)p_last_node;
+    }
+    free(p_curr_node);
+    *p_list_count = *p_list_count - 1;
+}
 
-
+#define ListRemoveAt(p_list, index)                                             \
+    _GenericRemoveAt(&((p_list)->head), &((p_list)->tail), &((p_list)->count), index)
 
 #endif//_STAE_LIST_H
