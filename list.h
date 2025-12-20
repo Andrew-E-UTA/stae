@@ -49,7 +49,7 @@ for(;c;c##temp=c##key^c->key, c##key=(uintptr_t)c, c=(Node_Generic*)c##temp)
 // #define ListContains(s, item)   (get(&(s), item) != 0)
 
 //TODO: implement deep copy and free 
-#define ListIntantiate(Name, Type)                                              \
+#define ListInstantiate(Name, Type)                                             \
 typedef struct {                                                                \
     Node_Generic* head;                                                         \
     Node_Generic* tail;                                                         \

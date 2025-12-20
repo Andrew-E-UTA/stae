@@ -2,7 +2,8 @@
 
 #include <stdio.h>
 
-ListIntantiate(Ints, i32);
+ListInstantiate(Ints, i32);
+ListInstantiate(Floats, f32);
 
 int main (void) {
 
@@ -17,10 +18,20 @@ int main (void) {
     ListPop(&i32List);
     ListPop(&i32List);
     ListPop(&i32List);
-
+    {    
     i32 i = 0;
     ListForeach(i32List.head, node) {
         printf("Node[%d]: item = %d\n", i++, *((i32*)node->data));
     }
+    }
+    Floats f32List = FloatsCreate();
+    for(inRange(i, 0, 20)) {
+        f32 item = i*1.3;
+        ListPush(&f32List, &item); 
+    }
 
+    i32 i = 0;
+    ListForeach(f32List.head, node) {
+        printf("Node[%d]: item = %g\n", i++, *((f32*)node->data));
+    }
 }
