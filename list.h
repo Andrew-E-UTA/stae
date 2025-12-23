@@ -78,7 +78,6 @@ Name Name##Create(void) {                                                       
 */
 static inline void _GenericListPush(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t *p_list_count,
          void* p_item, size_t item_size) {
-    if(!p_list_head) return;
     Node_Generic* p_head = *p_list_head;
     if(!p_head) {
         p_head = calloc(1, sizeof(Node_Generic));
@@ -86,6 +85,7 @@ static inline void _GenericListPush(Node_Generic** p_list_head, Node_Generic** p
         STAE_MEMCPY(p_head->data, p_item, item_size);
         *p_list_head = p_head;
         *p_list_tail = *p_list_head;
+        *p_list_count = *p_list_count + 1;
         return;
     }
     uintptr_t key = 0, temp_key;
@@ -110,7 +110,7 @@ _GenericListPush(&((p_list)->head), &((p_list)->tail), &((p_list)->count),      
 /*
 */
 static inline void _GenericListPop(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count) {
-    if(!p_list_head || *p_list_count == 0) return;
+    if(*p_list_count == 0) return;
     uintptr_t key = 0, temp_key;
     Node_Generic* p_curr_node = *p_list_head, *p_last_node;
     for(;temp_key=key^p_curr_node->key;
@@ -130,9 +130,8 @@ static inline void _GenericListPop(Node_Generic** p_list_head, Node_Generic** p_
 //======================================================================================
 /*
 */
-static inline void _GenericInsertAt(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count,
+static inline void _GenericListInsertAt(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count,
         void* p_item, size_t item_size, size_t index) {
-    if(!p_list_head) return;
     if(*p_list_count < index - 1 && index) return;
     uintptr_t key = 0, temp_key;
     Node_Generic* p_curr_node = *p_list_head, *p_last_node = 0;
@@ -163,7 +162,7 @@ static inline void _GenericInsertAt(Node_Generic** p_list_head, Node_Generic** p
 }
 
 #define ListInsertAt(p_list, index, p_item)                                     \
-    _GenericInsertAt(&((p_list)->head), &((p_list)->tail), &((p_list)->count),  \
+    _GenericListInsertAt(&((p_list)->head), &((p_list)->tail), &((p_list)->count),  \
         p_item, (p_list)->data_size, index)
 
 //======================================================================================
@@ -171,9 +170,20 @@ static inline void _GenericInsertAt(Node_Generic** p_list_head, Node_Generic** p
 //======================================================================================
 /*
 */
-static inline void _GenericRemoveAt(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count, 
+static inline void _GenericListInsertAfter() {
+
+}
+
+#define ListInsertAfter(p_list, p_ref_item, p_item)                                 \
+    _GenericListInsertAfter(&((p_list)->head), &((p_list)->tail), &((p_list)->count), p_ref_item, p_item, (p_list)->data_size,)
+
+//======================================================================================
+//  RemoveAt
+//======================================================================================
+/*
+*/
+static inline void _GenericListRemoveAt(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count, 
         size_t index) {
-    if(!p_list_head) return;
     if(*p_list_count < index - 1 && index) return;
     uintptr_t key = 0, temp_key;
     Node_Generic* p_curr_node = *p_list_head, *p_last_node = {0}, *p_next_node = {0};
@@ -201,16 +211,15 @@ static inline void _GenericRemoveAt(Node_Generic** p_list_head, Node_Generic** p
 }
 
 #define ListRemoveAt(p_list, index)                                             \
-    _GenericRemoveAt(&((p_list)->head), &((p_list)->tail), &((p_list)->count), index)
+    _GenericListRemoveAt(&((p_list)->head), &((p_list)->tail), &((p_list)->count), index)
 
 //======================================================================================
 //  RemoveAt
 //======================================================================================
 /*
 */
-static inline void _GenericRemoveNode(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count, 
+static inline void _GenericListRemoveNode(Node_Generic** p_list_head, Node_Generic** p_list_tail, size_t* p_list_count, 
         void* p_item, size_t item_size) {
-    if(!*p_list_head) return;
     uintptr_t key = 0, temp_key;
     Node_Generic* p_curr_node = *p_list_head, *p_last_node = {0}, *p_next_node = {0};
     size_t j = 0;
@@ -242,6 +251,23 @@ static inline void _GenericRemoveNode(Node_Generic** p_list_head, Node_Generic**
 }
 
 #define ListRemoveNode(p_list, p_item)                                          \
-    _GenericRemoveNode(&((p_list)->head), &((p_list)->tail), &((p_list)->count),      \
+    _GenericListRemoveNode(&((p_list)->head), &((p_list)->tail), &((p_list)->count),      \
     p_item, (p_list)->data_size)
+
+//======================================================================================
+//  GetNodeByIndex
+//======================================================================================
+/*
+*/
+static inline void* _GenericListGetNode(Node_Generic** p_list_head, size_t index) {
+    bool found;
+    size_t j = 0;
+    ListForeach(*p_list_head, p_curr_node)
+        if(j++ == index) return p_curr_node;
+    return nullptr;
+}
+
+#define ListGetNodeByIndex(p_list, index)                                       \
+    _GenericListGetNode(&((p_list)->head), index)
+
 #endif//_STAE_LIST_H
