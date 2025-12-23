@@ -1,3 +1,5 @@
+[Work In Progress]
+
 STAE is a library group that is written for C99 to add what I personally need for game developement
 
 1) Simple types
@@ -6,3 +8,6 @@ STAE is a library group that is written for C99 to add what I personally need fo
 2) Dynamic Arrays
     - Generic functionality for User defined dynamic arrays of primitive and complex types
         - Credit to Tsoding's NOB for his dynamic array implementation, this is based off that heavily
+3) Linked List
+    - Generic functionality for User defined linked lists of primitive and complex types
+        - implemented with xor nodes and a linked list struct that hold the head and tail
